@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed do Canal Telegram</title>
+    <!-- CONFIGURACAO: URL do seu feed.json no GitHub Pages -->
+    <script>
+        window.TELEGRAM_CONFIG = {
+            // SUBSTITUA pela URL do seu feed.json no GitHub Pages
+            FEED_URL: 'https://SEU_USUARIO.github.io/telegram-blogger-sync/feed.json',
+            CANAL_URL: 'https://t.me/teste2027X',
+            CANAL_NAME: 'Teste',
+            ITEMS_PER_PAGE: 10,
+            ENABLE_LAZY_LOAD: true,
+            DATE_LOCALE: 'pt-BR',
+            THEME: 'dark' // 'dark' ou 'light'
+        };
+    </script>
+    <style>
+        /* ==============================
+           RESET E BASE
+        ============================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .tg-feed-container {
+            --tg-bg: #0f0f0f;
+            --tg-card-bg: #1a1a1a;
+            --tg-border: #2a2a2a;
+            --tg-text: #e0e0e0;
+            --tg-text-secondary: #888;
+            --tg-accent: #229ED9;
+            --tg-accent-hover: #1a8bc2;
+            --tg-radius: 12px;
+            --tg-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --tg-hover-bg: #252525;
+            --tg-link: #5c9ce6;
+            --tg-badge-bg: #229ED9;
+            --tg-video-bg: #000;
+            --tg-audio-bg: #252525;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--tg-bg);
+            color: var(--tg-text);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tg-feed-container.light-theme {
+            --tg-bg: #f5f5f5;
+            --tg-card-bg: #ffffff;
+            --tg-border: #e0e0e0;
+            --tg-text: #1a1a1a;
+            --tg-text-secondary: #666;
+            --tg-hover-bg: #f0f0f0;
+            --tg-audio-bg: #f5f5f5;
+            --tg-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* ==============================
+           HEADER
+        ============================== */
+        .tg-header {
+            background: linear-gradient(135deg, #229ED9 0%, #176b96 100%);
+            padding: 30px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(34,158,217,0.3);
+        }
+
+        .tg-header-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tg-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .tg-header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+        }
+
+        .tg-header a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* ==============================
+           STATS BAR
+        ============================== */
+        .tg-stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 20px;
+            background: var(--tg-card-bg);
+            border-bottom: 1px solid var(--tg-border);
+        }
+
+        .tg-stat-item {
+            text-align: center;
+        }
+
+        .tg-stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--tg-accent);
+            display: block;
+        }
+
+        .tg-stat-label {
+            font-size: 12px;
+            color: var(--tg-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ==============================
+           CONTROLS
+        ============================== */
+        .tg-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--tg-card-bg);
+            border-bottom: 1px solid var(--tg-border);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tg-search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .tg-search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 25px;
+            border: 1px solid var(--tg-border);
+            background: var(--tg-bg);
+            color: var(--tg-text);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .tg-search-box input:focus {
+            border-color: var(--tg-accent);
+            box-shadow: 0 0 0 3px rgba(34,158,217,0.1);
+        }
+
+        .tg-search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--tg-text-secondary);
+            font-size: 16px;
+        }
+
+        .tg-filter-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tg-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--tg-border);
+            background: var(--tg-bg);
+            color: var(--tg-text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tg-btn:hover {
+            background: var(--tg-hover-bg);
+            border-color: var(--tg-accent);
+        }
+
+        .tg-btn.active {
+            background: var(--tg-accent);
+            color: #fff;
+            border-color: var(--tg-accent);
+        }
+
+        /* ==============================
+           MESSAGES CONTAINER
+        ============================== */
+        .tg-messages {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ==============================
+           MESSAGE CARD
+        ============================== */
+        .tg-message {
+            background: var(--tg-card-bg);
+            border-radius: var(--tg-radius);
+            border: 1px solid var(--tg-border);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: tgFadeIn 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .tg-message:hover {
+            box-shadow: var(--tg-shadow);
+            border-color: #3a3a3a;
+        }
+
+        @keyframes tgFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==============================
+           MESSAGE HEADER
+        ============================== */
+        .tg-message-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            gap: 12px;
+        }
+
+        .tg-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--tg-accent) 0%, #176b96 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .tg-message-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tg-message-author {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--tg-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tg-message-date {
+            font-size: 12px;
+            color: var(--tg-text-secondary);
+            margin-top: 2px;
+        }
+
+        .tg-message-link {
+            color: var(--tg-text-secondary);
+            font-size: 18px;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .tg-message-link:hover {
+            background: var(--tg-hover-bg);
+            color: var(--tg-accent);
+        }
+
+        .tg-badge {
+            background: var(--tg-badge-bg);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* ==============================
+           MESSAGE CONTENT
+        ============================== */
+        .tg-message-content {
+            padding: 0 15px 15px;
+        }
+
+        .tg-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--tg-text);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .tg-text a {
+            color: var(--tg-link);
+            text-decoration: none;
+        }
+
+        .tg-text a:hover {
+            text-decoration: underline;
+        }
+
+        .tg-text .hashtag {
+            color: var(--tg-accent);
+        }
+
+        .tg-text .mention {
+            color: var(--tg-accent);
+            font-weight: 500;
+        }
+
+        /* ==============================
+           PHOTO / IMAGE
+        ============================== */
+        .tg-photo {
+            margin: 10px -15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tg-photo img {
+            width: 100%;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .tg-photo img:hover {
+            transform: scale(1.02);
+        }
+
+        .tg-photo-caption {
+            padding: 12px 15px;
+            font-size: 14px;
+            color: var(--tg-text-secondary);
+        }
+
+        /* ==============================
+           VIDEO
+        ============================== */
+        .tg-video {
+            margin: 10px -15px 0;
+            position: relative;
+            background: var(--tg-video-bg);
+        }
+
+        .tg-video video {
+            width: 100%;
+            display: block;
+            max-height: 500px;
+        }
+
+        .tg-video-thumb {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tg-video-thumb img {
+            width: 100%;
+            display: block;
+        }
+
+        .tg-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            border: 3px solid rgba(255,255,255,0.9);
+        }
+
+        .tg-play-btn:hover {
+            background: var(--tg-accent);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .tg-play-btn::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 22px solid #fff;
+            border-top: 14px solid transparent;
+            border-bottom: 14px solid transparent;
+            margin-left: 5px;
+        }
+
+        .tg-video-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ==============================
+           GIF / ANIMATION
+        ============================== */
+        .tg-gif {
+            margin: 10px -15px 0;
+        }
+
+        .tg-gif video {
+            width: 100%;
+            max-height: 400px;
+            display: block;
+        }
+
+        /* ==============================
+           AUDIO / VOICE
+        ============================== */
+        .tg-audio {
+            margin: 10px 0 0;
+            padding: 15px;
+            background: var(--tg-audio-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tg-audio-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--tg-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tg-audio-icon:hover {
+            transform: scale(1.1);
+            background: var(--tg-accent-hover);
+        }
+
+        .tg-audio-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tg-audio-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--tg-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tg-audio-duration {
+            font-size: 12px;
+            color: var(--tg-text-secondary);
+            margin-top: 2px;
+        }
+
+        .tg-audio audio {
+            width: 100%;
+            margin-top: 8px;
+            height: 36px;
+        }
+
+        /* ==============================
+           DOCUMENT / FILE
+        ============================== */
+        .tg-document {
+            margin: 10px 0 0;
+            padding: 15px;
+            background: var(--tg-audio-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: var(--tg-text);
+            transition: all 0.3s;
+        }
+
+        .tg-document:hover {
+            background: var(--tg-hover-bg);
+            border-color: var(--tg-accent);
+        }
+
+        .tg-doc-icon {
+            width: 50px;
+            height: 50px;
+            background: #e74c3c;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .tg-doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tg-doc-name {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tg-doc-size {
+            font-size: 12px;
+            color: var(--tg-text-secondary);
+            margin-top: 2px;
+        }
+
+        /* ==============================
+           POLL
+        ============================== */
+        .tg-poll {
+            margin: 10px 0 0;
+            padding: 15px;
+            background: var(--tg-audio-bg);
+            border-radius: 10px;
+        }
+
+        .tg-poll-question {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .tg-poll-option {
+            margin-bottom: 10px;
+        }
+
+        .tg-poll-bar-bg {
+            background: var(--tg-bg);
+            border-radius: 8px;
+            height: 36px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tg-poll-bar-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(34,158,217,0.2);
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+
+        .tg-poll-bar-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 13px;
+        }
+
+        .tg-poll-total {
+            font-size: 12px;
+            color: var(--tg-text-secondary);
+            margin-top: 10px;
+        }
+
+        /* ==============================
+           STICKER
+        ============================== */
+        .tg-sticker {
+            margin: 10px 0 0;
+            display: inline-block;
+        }
+
+        .tg-sticker img,
+        .tg-sticker video {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+        }
+
+        /* ==============================
+           LOCATION
+        ============================== */
+        .tg-location {
+            margin: 10px -15px 0;
+            height: 250px;
+            background: var(--tg-hover-bg);
+            position: relative;
+        }
+
+        .tg-location iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .tg-location-static {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ==============================
+           FORWARDED
+        ============================== */
+        .tg-forwarded {
+            font-size: 13px;
+            color: var(--tg-text-secondary);
+            margin-bottom: 8px;
+            padding-left: 12px;
+            border-left: 2px solid var(--tg-accent);
+        }
+
+        /* ==============================
+           REPLY
+        ============================== */
+        .tg-reply {
+            background: var(--tg-bg);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--tg-accent);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tg-reply:hover {
+            background: var(--tg-hover-bg);
+        }
+
+        .tg-reply-author {
+            font-size: 12px;
+            color: var(--tg-accent);
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .tg-reply-text {
+            font-size: 13px;
+            color: var(--tg-text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ==============================
+           REACTIONS
+        ============================== */
+        .tg-reactions {
+            display: flex;
+            gap: 6px;
+            padding: 10px 15px;
+            flex-wrap: wrap;
+        }
+
+        .tg-reaction {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--tg-bg);
+            border-radius: 15px;
+            font-size: 13px;
+            border: 1px solid var(--tg-border);
+        }
+
+        /* ==============================
+           VIEWS / STATS FOOTER
+        ============================== */
+        .tg-message-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-top: 1px solid var(--tg-border);
+            font-size: 13px;
+            color: var(--tg-text-secondary);
+        }
+
+        .tg-views {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* ==============================
+           GROUPED PHOTOS (ALBUM)
+        ============================== */
+        .tg-album {
+            margin: 10px -15px 0;
+            display: grid;
+            gap: 2px;
+        }
+
+        .tg-album-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .tg-album-3 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 200px 150px;
+        }
+
+        .tg-album-3 .tg-album-item:first-child {
+            grid-column: span 2;
+        }
+
+        .tg-album-4 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 200px 200px;
+        }
+
+        .tg-album-5plus {
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 120px;
+        }
+
+        .tg-album-item {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .tg-album-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .tg-album-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .tg-album-more {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        /* ==============================
+           LIGHTBOX
+        ============================== */
+        .tg-lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+
+        .tg-lightbox.active {
+            display: flex;
+        }
+
+        .tg-lightbox img,
+        .tg-lightbox video {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .tg-lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            cursor: pointer;
+            z-index: 10001;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .tg-lightbox-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tg-lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-size: 40px;
+            cursor: pointer;
+            padding: 20px;
+            transition: all 0.3s;
+            border-radius: 50%;
+        }
+
+        .tg-lightbox-nav:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tg-lightbox-prev {
+            left: 10px;
+        }
+
+        .tg-lightbox-next {
+            right: 10px;
+        }
+
+        .tg-lightbox-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 15px;
+        }
+
+        /* ==============================
+           LOADING / EMPTY / ERROR
+        ============================== */
+        .tg-loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .tg-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--tg-border);
+            border-top-color: var(--tg-accent);
+            border-radius: 50%;
+            animation: tgSpin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes tgSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tg-loading p {
+            color: var(--tg-text-secondary);
+            font-size: 15px;
+        }
+
+        .tg-empty {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .tg-empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .tg-empty h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .tg-empty p {
+            color: var(--tg-text-secondary);
+            font-size: 14px;
+        }
+
+        .tg-error {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .tg-error-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .tg-error h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .tg-error p {
+            color: var(--tg-text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .tg-retry-btn {
+            padding: 10px 30px;
+            background: var(--tg-accent);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tg-retry-btn:hover {
+            background: var(--tg-accent-hover);
+            transform: translateY(-2px);
+        }
+
+        /* ==============================
+           PAGINATION
+        ============================== */
+        .tg-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 30px 20px;
+        }
+
+        .tg-page-btn {
+            padding: 10px 25px;
+            background: var(--tg-card-bg);
+            border: 1px solid var(--tg-border);
+            color: var(--tg-text);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tg-page-btn:hover:not(:disabled) {
+            background: var(--tg-accent);
+            color: #fff;
+            border-color: var(--tg-accent);
+        }
+
+        .tg-page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .tg-page-info {
+            color: var(--tg-text-secondary);
+            font-size: 14px;
+        }
+
+        /* ==============================
+           LOAD MORE BUTTON
+        ============================== */
+        .tg-load-more {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .tg-load-more-btn {
+            padding: 12px 40px;
+            background: var(--tg-card-bg);
+            border: 2px solid var(--tg-accent);
+            color: var(--tg-accent);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tg-load-more-btn:hover {
+            background: var(--tg-accent);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* ==============================
+           SCROLL TO TOP
+        ============================== */
+        .tg-scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--tg-accent);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(34,158,217,0.4);
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .tg-scroll-top.visible {
+            display: flex;
+        }
+
+        .tg-scroll-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(34,158,217,0.5);
+        }
+
+        /* ==============================
+           ANIMATED ENTRANCE DELAYS
+        ============================== */
+        .tg-message:nth-child(1) { animation-delay: 0.05s; }
+        .tg-message:nth-child(2) { animation-delay: 0.1s; }
+        .tg-message:nth-child(3) { animation-delay: 0.15s; }
+        .tg-message:nth-child(4) { animation-delay: 0.2s; }
+        .tg-message:nth-child(5) { animation-delay: 0.25s; }
+        .tg-message:nth-child(6) { animation-delay: 0.3s; }
+        .tg-message:nth-child(7) { animation-delay: 0.35s; }
+        .tg-message:nth-child(8) { animation-delay: 0.4s; }
+        .tg-message:nth-child(9) { animation-delay: 0.45s; }
+        .tg-message:nth-child(10) { animation-delay: 0.5s; }
+
+        /* ==============================
+           RESPONSIVE
+        ============================== */
+        @media (max-width: 600px) {
+            .tg-header h1 {
+                font-size: 22px;
+            }
+
+            .tg-stats-bar {
+                gap: 20px;
+            }
+
+            .tg-stat-number {
+                font-size: 20px;
+            }
+
+            .tg-controls {
+                flex-direction: column;
+            }
+
+            .tg-search-box {
+                width: 100%;
+            }
+
+            .tg-messages {
+                padding: 10px;
+            }
+
+            .tg-message {
+                margin-bottom: 12px;
+                border-radius: 10px;
+            }
+
+            .tg-album-5plus {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tg-scroll-top {
+                bottom: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* ==============================
+           SCROLLBAR STYLING
+        ============================== */
+        .tg-feed-container ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .tg-feed-container ::-webkit-scrollbar-track {
+            background: var(--tg-bg);
+        }
+
+        .tg-feed-container ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .tg-feed-container ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* ==============================
+           LAZY LOAD PLACEHOLDER
+        ============================== */
+        .tg-lazy {
+            background: linear-gradient(90deg, var(--tg-card-bg) 25%, var(--tg-hover-bg) 50%, var(--tg-card-bg) 75%);
+            background-size: 200% 100%;
+            animation: tgShimmer 1.5s infinite;
+        }
+
+        @keyframes tgShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .tg-lazy.loaded {
+            background: none;
+            animation: none;
+        }
+
+        /* ==============================
+           FOOTER
+        ============================== */
+        .tg-footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--tg-text-secondary);
+            font-size: 13px;
+            border-top: 1px solid var(--tg-border);
+        }
+
+        .tg-footer a {
+            color: var(--tg-accent);
+            text-decoration: none;
+        }
+
+        /* ==============================
+           TYPING INDICATOR (para live)
+        ============================== */
+        .tg-typing {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 15px;
+        }
+
+        .tg-typing span {
+            width: 8px;
+            height: 8px;
+            background: var(--tg-accent);
+            border-radius: 50%;
+            animation: tgTypingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .tg-typing span:nth-child(1) { animation-delay: -0.32s; }
+        .tg-typing span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes tgTypingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ==============================
+           EMBED LINK PREVIEW
+        ============================== */
+        .tg-link-preview {
+            margin: 10px 0 0;
+            border: 1px solid var(--tg-border);
+            border-radius: 10px;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--tg-text);
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .tg-link-preview:hover {
+            border-color: var(--tg-accent);
+        }
+
+        .tg-link-preview img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+        }
+
+        .tg-link-info {
+            padding: 12px 15px;
+        }
+
+        .tg-link-site {
+            font-size: 12px;
+            color: var(--tg-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .tg-link-title {
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .tg-link-desc {
+            font-size: 13px;
+            color: var(--tg-text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="tg-feed-container" id="tgFeedContainer">
+        <!-- Header -->
+        <div class="tg-header">
+            <div class="tg-header-icon">&#128172;</div>
+            <h1 id="tgChannelName">Teste</h1>
+            <p>Conteudo do canal <a href="https://t.me/teste2027X" target="_blank">@teste2027X</a></p>
+        </div>
+
+        <!-- Stats -->
+        <div class="tg-stats-bar" id="tgStatsBar" style="display:none;">
+            <div class="tg-stat-item">
+                <span class="tg-stat-number" id="tgStatTotal">0</span>
+                <span class="tg-stat-label">Posts</span>
+            </div>
+            <div class="tg-stat-item">
+                <span class="tg-stat-number" id="tgStatPhotos">0</span>
+                <span class="tg-stat-label">Fotos</span>
+            </div>
+            <div class="tg-stat-item">
+                <span class="tg-stat-number" id="tgStatVideos">0</span>
+                <span class="tg-stat-label">Videos</span>
+            </div>
+            <div class="tg-stat-item">
+                <span class="tg-stat-number" id="tgStatFiles">0</span>
+                <span class="tg-stat-label">Arquivos</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="tg-controls" id="tgControls" style="display:none;">
+            <div class="tg-search-box">
+                <span class="tg-search-icon">&#128269;</span>
+                <input type="text" id="tgSearchInput" placeholder="Buscar mensagens...">
+            </div>
+            <div class="tg-filter-btns">
+                <button class="tg-btn active" data-filter="all" onclick="tgSetFilter('all')">&#127760; Todos</button>
+                <button class="tg-btn" data-filter="text" onclick="tgSetFilter('text')">&#128196; Texto</button>
+                <button class="tg-btn" data-filter="photo" onclick="tgSetFilter('photo')">&#128247; Fotos</button>
+                <button class="tg-btn" data-filter="video" onclick="tgSetFilter('video')">&#127909; Videos</button>
+                <button class="tg-btn" data-filter="document" onclick="tgSetFilter('document')">&#128230; Arquivos</button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="tg-messages" id="tgMessages">
+            <div class="tg-loading">
+                <div class="tg-spinner"></div>
+                <p>Carregando conteudo do Telegram...</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="tg-pagination" id="tgPagination" style="display:none;">
+            <button class="tg-page-btn" id="tgPrevBtn" onclick="tgPrevPage()">&#9664; Anterior</button>
+            <span class="tg-page-info" id="tgPageInfo">Pagina 1 de 1</span>
+            <button class="tg-page-btn" id="tgNextBtn" onclick="tgNextPage()">Proximo &#9654;</button>
+        </div>
+
+        <!-- Load More -->
+        <div class="tg-load-more" id="tgLoadMore" style="display:none;">
+            <button class="tg-load-more-btn" onclick="tgLoadMore()">&#128229; Carregar mais</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="tg-footer">
+            Feed sincronizado com <a href="https://t.me/teste2027X" target="_blank">@teste2027X</a> via Telegram API
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="tg-lightbox" id="tgLightbox" onclick="tgCloseLightbox()">
+        <div class="tg-lightbox-close" onclick="tgCloseLightbox()">&times;</div>
+        <div class="tg-lightbox-nav tg-lightbox-prev" onclick="tgLightboxPrev(event)">&#9664;</div>
+        <div class="tg-lightbox-nav tg-lightbox-next" onclick="tgLightboxNext(event)">&#9654;</div>
+        <span class="tg-lightbox-counter" id="tgLightboxCounter"></span>
+    </div>
+
+    <!-- Scroll to Top -->
+    <button class="tg-scroll-top" id="tgScrollTop" onclick="tgScrollToTop()">&#9650;</button>
+
+    <script>
+    // ==============================
+    // TELEGRAM FEED ENGINE
+    // ==============================
+    (function() {
+        'use strict';
+
+        // Config
+        const CFG = window.TELEGRAM_CONFIG || {};
+        const FEED_URL = CFG.FEED_URL || 'https://SEU_USUARIO.github.io/telegram-blogger-sync/feed.json';
+        const ITEMS_PER_PAGE = CFG.ITEMS_PER_PAGE || 10;
+        const ENABLE_LAZY_LOAD = CFG.ENABLE_LAZY_LOAD !== false;
+        const DATE_LOCALE = CFG.DATE_LOCALE || 'pt-BR';
+        const THEME = CFG.THEME || 'dark';
+
+        // State
+        let allMessages = [];
+        let filteredMessages = [];
+        let currentPage = 1;
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let lightboxImages = [];
+        let lightboxIndex = 0;
+        let displayedCount = 0;
+
+        // DOM refs
+        const $ = id => document.getElementById(id);
+        const container = $('tgFeedContainer');
+        const messagesEl = $('tgMessages');
+        const paginationEl = $('tgPagination');
+        const loadMoreEl = $('tgLoadMore');
+        const controlsEl = $('tgControls');
+        const statsBarEl = $('tgStatsBar');
+        const prevBtn = $('tgPrevBtn');
+        const nextBtn = $('tgNextBtn');
+        const pageInfo = $('tgPageInfo');
+
+        // Apply theme
+        if (THEME === 'light') {
+            container.classList.add('light-theme');
+        }
+
+        // ==============================
+        // INIT
+        // ==============================
+        function init() {
+            loadFeed();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            // Search
+            const searchInput = $('tgSearchInput');
+            if (searchInput) {
+                let debounceTimer;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        searchQuery = e.target.value.toLowerCase().trim();
+                        currentPage = 1;
+                        displayedCount = 0;
+                        applyFilters();
+                    }, 300);
+                });
+            }
+
+            // Scroll to top
+            window.addEventListener('scroll', () => {
+                const btn = $('tgScrollTop');
+                if (window.scrollY > 500) {
+                    btn.classList.add('visible');
+                } else {
+                    btn.classList.remove('visible');
+                }
+            });
+
+            // Keyboard nav for lightbox
+            document.addEventListener('keydown', (e) => {
+                const lightbox = $('tgLightbox');
+                if (!lightbox.classList.contains('active')) return;
+                if (e.key === 'Escape') tgCloseLightbox();
+                if (e.key === 'ArrowLeft') tgLightboxPrev(e);
+                if (e.key === 'ArrowRight') tgLightboxNext(e);
+            });
+        }
+
+        // ==============================
+        // LOAD FEED
+        // ==============================
+        async function loadFeed() {
+            try {
+                const response = await fetch(FEED_URL + '?t=' + Date.now(), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar feed: ' + response.status);
+                }
+
+                const data = await response.json();
+                allMessages = data.messages || data || [];
+
+                if (!Array.isArray(allMessages)) {
+                    throw new Error('Formato de dados invalido');
+                }
+
+                // Sort by date desc
+                allMessages.sort((a, b) => {
+                    const da = a.date || a.timestamp || 0;
+                    const db = b.date || b.timestamp || 0;
+                    return new Date(db) - new Date(da);
+                });
+
+                updateStats();
+                controlsEl.style.display = '';
+                statsBarEl.style.display = '';
+                applyFilters();
+
+            } catch (error) {
+                console.error('Erro ao carregar feed:', error);
+                showError(error.message);
+            }
+        }
+
+        function showError(msg) {
+            messagesEl.innerHTML = `
+                <div class="tg-error">
+                    <div class="tg-error-icon">&#9888;&#65039;</div>
+                    <h3>Erro ao carregar conteudo</h3>
+                    <p>${escapeHtml(msg)}</p>
+                    <p style="margin-top:10px; font-size:13px;">
+                        Verifique se a URL do feed esta configurada corretamente no topo do codigo.
+                    </p>
+                    <button class="tg-retry-btn" onclick="location.reload()" style="margin-top:15px;">
+                        &#128260; Tentar novamente
+                    </button>
+                </div>
+            `;
+        }
+
+        // ==============================
+        // STATS
+        // ==============================
+        function updateStats() {
+            const stats = {
+                total: allMessages.length,
+                photos: 0,
+                videos: 0,
+                files: 0
+            };
+
+            allMessages.forEach(m => {
+                const type = getMessageType(m);
+                if (type === 'photo') stats.photos++;
+                if (type === 'video') stats.videos++;
+                if (type === 'document') stats.files++;
+            });
+
+            $('tgStatTotal').textContent = stats.total.toLocaleString();
+            $('tgStatPhotos').textContent = stats.photos.toLocaleString();
+            $('tgStatVideos').textContent = stats.videos.toLocaleString();
+            $('tgStatFiles').textContent = stats.files.toLocaleString();
+        }
+
+        // ==============================
+        // FILTERS
+        // ==============================
+        window.tgSetFilter = function(filter) {
+            currentFilter = filter;
+            currentPage = 1;
+            displayedCount = 0;
+
+            // Update buttons
+            document.querySelectorAll('.tg-filter-btns .tg-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+
+            applyFilters();
+        };
+
+        function applyFilters() {
+            filteredMessages = allMessages.filter(m => {
+                // Type filter
+                if (currentFilter !== 'all') {
+                    const type = getMessageType(m);
+                    if (type !== currentFilter) return false;
+                }
+
+                // Search filter
+                if (searchQuery) {
+                    const text = getMessageText(m).toLowerCase();
+                    const caption = (m.caption || '').toLowerCase();
+                    if (!text.includes(searchQuery) && !caption.includes(searchQuery)) return false;
+                }
+
+                return true;
+            });
+
+            renderMessages();
+        }
+
+        function getMessageType(m) {
+            if (m.animation) return 'animation';
+            if (m.video) return 'video';
+            if (m.photo && m.photo.length > 0) return 'photo';
+            if (m.document) return 'document';
+            if (m.audio || m.voice) return 'audio';
+            if (m.sticker) return 'sticker';
+            if (m.poll) return 'poll';
+            if (m.location) return 'location';
+            return 'text';
+        }
+
+        function getMessageText(m) {
+            return m.text || m.caption || '';
+        }
+
+        // ==============================
+        // RENDER
+        // ==============================
+        function renderMessages() {
+            const totalPages = Math.ceil(filteredMessages.length / ITEMS_PER_PAGE);
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageMessages = filteredMessages.slice(start, end);
+
+            if (filteredMessages.length === 0) {
+                messagesEl.innerHTML = `
+                    <div class="tg-empty">
+                        <div class="tg-empty-icon">&#128270;</div>
+                        <h3>Nenhuma mensagem encontrada</h3>
+                        <p>Tente ajustar os filtros ou termos de busca.</p>
+                    </div>
+                `;
+                paginationEl.style.display = 'none';
+                loadMoreEl.style.display = 'none';
+                return;
+            }
+
+            const html = pageMessages.map((msg, idx) => renderMessage(msg, start + idx)).join('');
+            messagesEl.innerHTML = html;
+
+            // Setup lightbox images
+            setupLightbox();
+
+            // Setup lazy loading
+            if (ENABLE_LAZY_LOAD) {
+                setupLazyLoad();
+            }
+
+            // Update pagination
+            updatePagination(totalPages);
+
+            // Scroll to top of messages
+            if (displayedCount > 0) {
+                messagesEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            displayedCount = pageMessages.length;
+        }
+
+        function renderMessage(msg, idx) {
+            const type = getMessageType(msg);
+            const date = formatDate(msg.date || msg.timestamp);
+            const messageUrl = `https://t.me/teste2027X/${msg.message_id || msg.id || ''}`;
+            const text = formatText(msg.text || msg.caption || '');
+            const hasText = text.length > 0;
+
+            let content = '';
+
+            // Reply
+            if (msg.reply_to_message) {
+                const replyText = getMessageText(msg.reply_to_message);
+                content += `<div class="tg-reply">
+                    <div class="tg-reply-author">${escapeHtml(msg.reply_to_message.from?.first_name || 'Usuario')}</div>
+                    <div class="tg-reply-text">${escapeHtml(replyText)}</div>
+                </div>`;
+            }
+
+            // Forwarded
+            if (msg.forward_from || msg.forward_from_chat) {
+                const from = msg.forward_from_chat?.title || msg.forward_from?.first_name || 'Desconhecido';
+                content += `<div class="tg-forwarded">&#8611; Encaminhado de <strong>${escapeHtml(from)}</strong></div>`;
+            }
+
+            // Media content
+            switch (type) {
+                case 'photo':
+                    content += renderPhoto(msg);
+                    break;
+                case 'video':
+                    content += renderVideo(msg);
+                    break;
+                case 'animation':
+                    content += renderAnimation(msg);
+                    break;
+                case 'audio':
+                case 'voice':
+                    content += renderAudio(msg);
+                    break;
+                case 'document':
+                    content += renderDocument(msg);
+                    break;
+                case 'sticker':
+                    content += renderSticker(msg);
+                    break;
+                case 'poll':
+                    content += renderPoll(msg);
+                    break;
+                case 'location':
+                    content += renderLocation(msg);
+                    break;
+            }
+
+            // Link preview
+            if (msg.link_preview || msg.web_page) {
+                content += renderLinkPreview(msg.link_preview || msg.web_page);
+            }
+
+            // Reactions
+            let reactionsHtml = '';
+            if (msg.reactions && msg.reactions.length > 0) {
+                reactionsHtml = `<div class="tg-reactions">` +
+                    msg.reactions.map(r => `<span class="tg-reaction">${r.emoji} ${r.count}</span>`).join('') +
+                `</div>`;
+            }
+
+            // Views
+            let footerHtml = '';
+            if (msg.views || msg.view_count) {
+                footerHtml = `<div class="tg-message-footer">
+                    <div class="tg-views">&#128065; ${formatNumber(msg.views || msg.view_count)} visualizacoes</div>
+                    <span>${date}</span>
+                </div>`;
+            }
+
+            // Author info
+            const author = msg.from?.first_name || msg.sender_chat?.title || 'Teste';
+            const avatar = author.charAt(0).toUpperCase();
+            const badge = msg.sender_chat?.type === 'channel' ? '<span class="tg-badge">Canal</span>' : '';
+
+            return `<div class="tg-message" data-type="${type}" data-index="${idx}">
+                <div class="tg-message-header">
+                    <div class="tg-avatar">${avatar}</div>
+                    <div class="tg-message-meta">
+                        <div class="tg-message-author">${escapeHtml(author)} ${badge}</div>
+                        <div class="tg-message-date">${date}</div>
+                    </div>
+                    <a href="${messageUrl}" target="_blank" class="tg-message-link" title="Ver no Telegram">&#10138;</a>
+                </div>
+                <div class="tg-message-content">
+                    ${hasText ? `<div class="tg-text">${text}</div>` : ''}
+                    ${content}
+                </div>
+                ${reactionsHtml}
+                ${footerHtml}
+            </div>`;
+        }
+
+        // ==============================
+        // RENDER MEDIA TYPES
+        // ==============================
+        function renderPhoto(msg) {
+            const photos = msg.photo || [];
+            const bestPhoto = getBestPhoto(photos);
+
+            // Album
+            if (msg.media_group_id && msg.album_photos && msg.album_photos.length > 1) {
+                return renderAlbum(msg.album_photos);
+            }
+
+            if (!bestPhoto) return '';
+
+            return `<div class="tg-photo">
+                <img src="${escapeHtml(bestPhoto)}" 
+                     alt="Foto" 
+                     class="tg-lazy"
+                     onclick="tgOpenLightbox(this.src)"
+                     loading="lazy">
+            </div>`;
+        }
+
+        function renderAlbum(photos) {
+            const count = photos.length;
+            let gridClass = 'tg-album-2';
+            if (count === 3) gridClass = 'tg-album-3';
+            else if (count === 4) gridClass = 'tg-album-4';
+            else if (count >= 5) gridClass = 'tg-album-5plus';
+
+            let html = `<div class="tg-album ${gridClass}">`;
+            photos.slice(0, 6).forEach((photo, i) => {
+                const src = typeof photo === 'string' ? photo : getBestPhoto(photo.photo || [photo]);
+                if (i === 5 && count > 6) {
+                    html += `<div class="tg-album-item" onclick="tgOpenLightbox('${escapeHtml(src)}')">
+                        <img src="${escapeHtml(src)}" loading="lazy">
+                        <div class="tg-album-more">+${count - 5}</div>
+                    </div>`;
+                } else {
+                    html += `<div class="tg-album-item" onclick="tgOpenLightbox('${escapeHtml(src)}')">
+                        <img src="${escapeHtml(src)}" loading="lazy">
+                    </div>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderVideo(msg) {
+            const video = msg.video || msg.animation || {};
+            const thumb = video.thumb?.file_id || msg.thumbnail || '';
+            const fileUrl = video.file_url || video.url || msg.file_url || '';
+            const duration = formatDuration(video.duration || msg.duration || 0);
+            const width = video.width || 1280;
+            const height = video.height || 720;
+
+            if (fileUrl) {
+                return `<div class="tg-video">
+                    <video controls preload="metadata" poster="${escapeHtml(thumb)}" style="max-height:500px;">
+                        <source src="${escapeHtml(fileUrl)}" type="${video.mime_type || 'video/mp4'}">
+                        Seu navegador nao suporta video.
+                    </video>
+                </div>`;
+            }
+
+            // Fallback: thumbnail with link to Telegram
+            return `<div class="tg-video">
+                <div class="tg-video-thumb" onclick="window.open('https://t.me/teste2027X/${msg.message_id || msg.id}', '_blank')">
+                    <img src="${escapeHtml(thumb || 'https://via.placeholder.com/640x360/1a1a1a/666?text=Video')}" alt="Video">
+                    <div class="tg-play-btn"></div>
+                    ${duration ? `<div class="tg-video-duration">${duration}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function renderAnimation(msg) {
+            const anim = msg.animation || {};
+            const fileUrl = anim.file_url || msg.file_url || '';
+            const thumb = anim.thumb?.file_id || '';
+
+            if (fileUrl) {
+                return `<div class="tg-gif">
+                    <video autoplay loop muted playsinline poster="${escapeHtml(thumb)}" style="max-height:400px;">
+                        <source src="${escapeHtml(fileUrl)}" type="${anim.mime_type || 'video/mp4'}">
+                    </video>
+                </div>`;
+            }
+
+            return renderVideo(msg);
+        }
+
+        function renderAudio(msg) {
+            const audio = msg.audio || msg.voice || {};
+            const fileUrl = audio.file_url || msg.file_url || '';
+            const duration = formatDuration(audio.duration || msg.duration || 0);
+            const title = audio.title || audio.file_name || 'Audio';
+            const performer = audio.performer ? ` - ${audio.performer}` : '';
+            const isVoice = !!msg.voice;
+
+            return `<div class="tg-audio">
+                <div class="tg-audio-icon">${isVoice ? '&#127908;' : '&#127925;'}</div>
+                <div class="tg-audio-info">
+                    <div class="tg-audio-title">${isVoice ? 'Mensagem de voz' : escapeHtml(title + performer)}</div>
+                    <div class="tg-audio-duration">${duration}</div>
+                    ${fileUrl ? `<audio controls preload="metadata"><source src="${escapeHtml(fileUrl)}" type="${audio.mime_type || 'audio/mpeg'}"></audio>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function renderDocument(msg) {
+            const doc = msg.document || {};
+            const fileUrl = doc.file_url || msg.file_url || '';
+            const fileName = doc.file_name || 'Documento';
+            const fileSize = formatFileSize(doc.file_size || 0);
+            const mimeType = doc.mime_type || '';
+            const icon = getDocumentIcon(mimeType);
+            const color = getDocumentColor(mimeType);
+
+            return `<a href="${fileUrl ? escapeHtml(fileUrl) : 'https://t.me/teste2027X/' + (msg.message_id || msg.id)}" 
+                   target="_blank" class="tg-document">
+                <div class="tg-doc-icon" style="background:${color}">${icon}</div>
+                <div class="tg-doc-info">
+                    <div class="tg-doc-name">${escapeHtml(fileName)}</div>
+                    <div class="tg-doc-size">${fileSize}${mimeType ? ' · ' + escapeHtml(mimeType) : ''}</div>
+                </div>
+            </a>`;
+        }
+
+        function renderSticker(msg) {
+            const sticker = msg.sticker || {};
+            const isAnimated = sticker.is_animated;
+            const isVideo = sticker.is_video;
+            const fileUrl = sticker.file_url || '';
+            const thumb = sticker.thumb?.file_id || '';
+
+            if (isAnimated || isVideo) {
+                return `<div class="tg-sticker">
+                    <video autoplay loop muted playsinline poster="${escapeHtml(thumb)}" style="max-width:200px;max-height:200px;">
+                        <source src="${escapeHtml(fileUrl)}" type="video/webm">
+                    </video>
+                </div>`;
+            }
+
+            const staticUrl = sticker.file_url || thumb;
+            return `<div class="tg-sticker">
+                <img src="${escapeHtml(staticUrl)}" alt="Sticker" loading="lazy" style="max-width:200px;max-height:200px;">
+            </div>`;
+        }
+
+        function renderPoll(msg) {
+            const poll = msg.poll || {};
+            const question = poll.question || 'Enquete';
+            const options = poll.options || [];
+            const total = options.reduce((sum, o) => sum + (o.voter_count || 0), 0);
+
+            let html = `<div class="tg-poll">
+                <div class="tg-poll-question">&#128202; ${escapeHtml(question)}</div>`;
+
+            options.forEach(opt => {
+                const votes = opt.voter_count || 0;
+                const pct = total > 0 ? Math.round((votes / total) * 100) : 0;
+                html += `<div class="tg-poll-option">
+                    <div class="tg-poll-bar-bg">
+                        <div class="tg-poll-bar-fill" style="width:${pct}%"></div>
+                        <div class="tg-poll-bar-text">
+                            <span>${escapeHtml(opt.text)}</span>
+                            <span>${pct}% (${votes})</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            html += `<div class="tg-poll-total">${total} voto${total !== 1 ? 's' : ''}</div></div>`;
+            return html;
+        }
+
+        function renderLocation(msg) {
+            const loc = msg.location || {};
+            const lat = loc.latitude;
+            const lon = loc.longitude;
+
+            if (!lat || !lon) return '';
+
+            const mapUrl = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d100000!2d${lon}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1spt-BR!2sbr!4v1`;
+
+            return `<div class="tg-location">
+                <iframe src="${escapeHtml(mapUrl)}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>`;
+        }
+
+        function renderLinkPreview(preview) {
+            if (!preview) return '';
+            const url = preview.url || preview.display_url || '#';
+            const title = preview.title || '';
+            const description = preview.description || preview.site_name || '';
+            const image = preview.photo?.[preview.photo.length - 1]?.file_url || preview.thumb_url || '';
+
+            return `<a href="${escapeHtml(url)}" target="_blank" class="tg-link-preview">
+                ${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy">` : ''}
+                <div class="tg-link-info">
+                    <div class="tg-link-site">${escapeHtml(new URL(url).hostname)}</div>
+                    ${title ? `<div class="tg-link-title">${escapeHtml(title)}</div>` : ''}
+                    ${description ? `<div class="tg-link-desc">${escapeHtml(description)}</div>` : ''}
+                </div>
+            </a>`;
+        }
+
+        // ==============================
+        // HELPERS
+        // ==============================
+        function getBestPhoto(photos) {
+            if (!photos || photos.length === 0) return null;
+            // Return the largest photo (last in array usually)
+            const last = photos[photos.length - 1];
+            return last.file_url || last.file_id || (typeof last === 'string' ? last : null);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+
+            const now = new Date();
+            const diff = now - d;
+            const days = Math.floor(diff / 86400000);
+
+            if (days === 0) {
+                return `Hoje as ${d.toLocaleTimeString(DATE_LOCALE, {hour:'2-digit',minute:'2-digit'})}`;
+            } else if (days === 1) {
+                return `Ontem as ${d.toLocaleTimeString(DATE_LOCALE, {hour:'2-digit',minute:'2-digit'})}`;
+            } else if (days < 7) {
+                return d.toLocaleDateString(DATE_LOCALE, {weekday:'long',hour:'2-digit',minute:'2-digit'});
+            } else {
+                return d.toLocaleDateString(DATE_LOCALE, {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+            }
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '';
+            const kb = bytes / 1024;
+            if (kb < 1024) return Math.round(kb) + ' KB';
+            const mb = kb / 1024;
+            if (mb < 1024) return mb.toFixed(1) + ' MB';
+            return (mb / 1024).toFixed(2) + ' GB';
+        }
+
+        function formatNumber(n) {
+            if (!n) return '0';
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatText(text) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+
+            // URLs
+            html = html.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+
+            // Hashtags
+            html = html.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+
+            // Mentions
+            html = html.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+
+            // Bold (*text*)
+            html = html.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+
+            // Italic (_text_)
+            html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+            // Code (`text`)
+            html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(34,158,217,0.15);padding:2px 6px;border-radius:4px;font-family:monospace;">$1</code>');
+
+            // Newlines
+            html = html.replace(/\n/g, '<br>');
+
+            return html;
+        }
+
+        function getDocumentIcon(mime) {
+            if (!mime) return '&#128196;';
+            if (mime.includes('pdf')) return '&#128213;';
+            if (mime.includes('image')) return '&#128247;';
+            if (mime.includes('video')) return '&#127909;';
+            if (mime.includes('audio')) return '&#127925;';
+            if (mime.includes('zip') || mime.includes('rar') || mime.includes('7z')) return '&#128230;';
+            if (mime.includes('word') || mime.includes('document')) return '&#128221;';
+            if (mime.includes('excel') || mime.includes('sheet')) return '&#128202;';
+            if (mime.includes('powerpoint') || mime.includes('presentation')) return '&#127919;';
+            if (mime.includes('code') || mime.includes('javascript') || mime.includes('json')) return '&#128187;';
+            return '&#128196;';
+        }
+
+        function getDocumentColor(mime) {
+            if (!mime) return '#666';
+            if (mime.includes('pdf')) return '#e74c3c';
+            if (mime.includes('image')) return '#3498db';
+            if (mime.includes('video')) return '#9b59b6';
+            if (mime.includes('audio')) return '#e67e22';
+            if (mime.includes('zip') || mime.includes('compressed')) return '#f39c12';
+            if (mime.includes('word') || mime.includes('document')) return '#2980b9';
+            if (mime.includes('excel') || mime.includes('sheet')) return '#27ae60';
+            if (mime.includes('powerpoint')) return '#e74c3c';
+            if (mime.includes('code')) return '#34495e';
+            return '#666';
+        }
+
+        // ==============================
+        // PAGINATION
+        // ==============================
+        function updatePagination(totalPages) {
+            pageInfo.textContent = `Pagina ${currentPage} de ${totalPages}`;
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+
+            if (totalPages <= 1) {
+                paginationEl.style.display = 'none';
+            } else {
+                paginationEl.style.display = '';
+            }
+        }
+
+        window.tgPrevPage = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderMessages();
+            }
+        };
+
+        window.tgNextPage = function() {
+            const totalPages = Math.ceil(filteredMessages.length / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderMessages();
+            }
+        };
+
+        window.tgLoadMore = function() {
+            // Implementation for infinite scroll / load more
+            currentPage++;
+            const totalPages = Math.ceil(filteredMessages.length / ITEMS_PER_PAGE);
+            if (currentPage > totalPages) {
+                loadMoreEl.style.display = 'none';
+                return;
+            }
+
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const newMessages = filteredMessages.slice(start, end);
+
+            const html = newMessages.map((msg, idx) => renderMessage(msg, start + idx)).join('');
+            messagesEl.insertAdjacentHTML('beforeend', html);
+
+            setupLightbox();
+            if (ENABLE_LAZY_LOAD) setupLazyLoad();
+
+            if (currentPage >= totalPages) {
+                loadMoreEl.style.display = 'none';
+            }
+        };
+
+        // ==============================
+        // LIGHTBOX
+        // ==============================
+        function setupLightbox() {
+            lightboxImages = [];
+            document.querySelectorAll('.tg-photo img, .tg-album-item img').forEach(img => {
+                lightboxImages.push(img.src);
+            });
+        }
+
+        window.tgOpenLightbox = function(src) {
+            const lightbox = $('tgLightbox');
+            lightboxIndex = lightboxImages.indexOf(src);
+            if (lightboxIndex === -1) {
+                lightboxImages = [src];
+                lightboxIndex = 0;
+            }
+            updateLightboxContent();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.tgCloseLightbox = function() {
+            const lightbox = $('tgLightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        window.tgLightboxPrev = function(e) {
+            e.stopPropagation();
+            if (lightboxIndex > 0) {
+                lightboxIndex--;
+                updateLightboxContent();
+            }
+        };
+
+        window.tgLightboxNext = function(e) {
+            e.stopPropagation();
+            if (lightboxIndex < lightboxImages.length - 1) {
+                lightboxIndex++;
+                updateLightboxContent();
+            }
+        };
+
+        function updateLightboxContent() {
+            const lightbox = $('tgLightbox');
+            const counter = $('tgLightboxCounter');
+            const existing = lightbox.querySelector('img, video');
+            if (existing) existing.remove();
+
+            const src = lightboxImages[lightboxIndex];
+            const isVideo = src.match(/\.(mp4|webm|mov)$/i);
+
+            if (isVideo) {
+                const video = document.createElement('video');
+                video.src = src;
+                video.controls = true;
+                video.autoplay = true;
+                lightbox.insertBefore(video, counter);
+            } else {
+                const img = document.createElement('img');
+                img.src = src;
+                lightbox.insertBefore(img, counter);
+            }
+
+            counter.textContent = `${lightboxIndex + 1} / ${lightboxImages.length}`;
+        }
+
+        // ==============================
+        // LAZY LOADING
+        // ==============================
+        function setupLazyLoad() {
+            if (!('IntersectionObserver' in window)) return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const el = entry.target;
+                        el.classList.add('loaded');
+                        observer.unobserve(el);
+                    }
+                });
+            }, { rootMargin: '50px' });
+
+            document.querySelectorAll('.tg-lazy').forEach(el => observer.observe(el));
+        }
+
+        // ==============================
+        // SCROLL TO TOP
+        // ==============================
+        window.tgScrollToTop = function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // ==============================
+        // START
+        // ==============================
+        init();
+
+    })();
+    </script>
+</body>
+</html>
