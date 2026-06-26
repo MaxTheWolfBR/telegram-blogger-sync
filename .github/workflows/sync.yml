@@ -1,0 +1,144 @@
+name: Sincronizar Canal Telegram
+
+on:
+  # Executar a cada 15 minutos
+  schedule:
+    - cron: '*/15 * * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+    inputs:
+      full_sync:
+        description: 'Sincronização completa'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+  # Executar em push na main (para testes)
+  push:
+    branches: [ main, master ]
+
+# Permissões necessárias para fazer push do feed.json
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Concurrency para evitar execuções simultâneas
+concurrency:
+  group: telegram-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout do repositório
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Setup Python
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      # Instalar dependências
+      - name: 📦 Instalar dependências
+        run: |
+          pip install -r requirements.txt
+      
+      # Executar sincronização
+      - name: 🔄 Sincronizar mensagens
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        run: |
+          if [ "${{ github.event.inputs.full_sync }}" == "true" ]; then
+            echo "Executando sincronização completa..."
+            python fetch_telegram.py --full
+          else
+            echo "Executando sincronização incremental..."
+            python fetch_telegram.py
+          fi
+      
+      # Verificar se feed.json foi gerado
+      - name: ✅ Verificar feed
+        run: |
+          if [ -f "feed.json" ]; then
+            echo "✅ Feed gerado com sucesso!"
+            echo "📊 Estatísticas:"
+            python -c "
+import json
+with open('feed.json') as f:
+    data = json.load(f)
+    print(f'   Canal: {data[\"channel\"][\"title\"]}')
+    print(f'   Total de mensagens: {data[\"meta\"][\"total_messages\"]}')
+    print(f'   Gerado em: {data[\"meta\"][\"generated_at\"]}')
+"
+          else
+            echo "❌ feed.json não encontrado!"
+            exit 1
+          fi
+      
+      # Commit e push do feed.json
+      - name: 💾 Salvar feed
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          # Adicionar feed.json e .sync_state.json
+          git add feed.json .sync_state.json
+          
+          # Fazer commit apenas se houver mudanças
+          if git diff --cached --quiet; then
+            echo "📭 Nenhuma mudança detectada."
+          else
+            git commit -m "🔄 Sincronização automática do Telegram - $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            git push
+            echo "✅ Feed atualizado e enviado!"
+          fi
+
+  # Job para deploy no GitHub Pages (opcional - para visualização)
+  deploy:
+    needs: sync
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    # Ambiente para GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      # Configurar GitHub Pages
+      - name: 📄 Setup Pages
+        uses: actions/configure-pages@v4
+      
+      # Copiar feed.json para a pasta de deploy
+      - name: 📁 Preparar arquivos
+        run: |
+          mkdir -p _site
+          cp feed.json _site/
+          cp blogger-page.html _site/index.html
+      
+      # Upload do artifact
+      - name: ⬆️ Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+      
+      # Deploy para GitHub Pages
+      - name: 🚀 Deploy para GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
